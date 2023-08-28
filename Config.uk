@@ -1,0 +1,5 @@
+config LIBDEFLATE
+    bool "libdeflate - fast DEFLATE compression library"
+    imply LIBINTEL_INTRINSICS if ARCH_X86_64
+    imply LIBARM_INTRINSICS if ARCH_ARM_32 || ARCH_ARM_64
+    default n
