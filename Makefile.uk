@@ -1,0 +1,88 @@
+#  libdeflate Makefile.uk
+#
+#  Authors: Andrei Tatar <andrei@unikraft.io>
+#
+#  Copyright (c) 2023, Unikraft GmbH and The Unikraft Authors.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#  3. Neither the name of the copyright holder nor the names of its
+#     contributors may be used to endorse or promote products derived from
+#     this software without specific prior written permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+#
+
+################################################################################
+# Library registration
+################################################################################
+$(eval $(call addlib_s,libdeflate,$(CONFIG_LIBDEFLATE)))
+
+################################################################################
+# Sources
+################################################################################
+LIBDEFLATE_VERSION=1.18
+LIBDEFLATE_URL=https://github.com/ebiggers/libdeflate/archive/refs/tags/v$(LIBDEFLATE_VERSION).tar.gz
+LIBDEFLATE_DIRNAME=libdeflate-$(LIBDEFLATE_VERSION)
+LIBDEFLATE_PATCHDIR=$(LIBDEFLATE_BASE)/patches
+$(eval $(call fetch,libdeflate,$(LIBDEFLATE_URL)))
+$(eval $(call patch,libdeflate,$(LIBDEFLATE_PATCHDIR),$(LIBDEFLATE_DIRNAME)))
+
+################################################################################
+# Helpers
+################################################################################
+LIBDEFLATE_SRC = $(LIBDEFLATE_ORIGIN)/$(LIBDEFLATE_DIRNAME)
+
+################################################################################
+# Library includes
+################################################################################
+# API
+LIBDEFLATE__API += -I$(LIBDEFLATE_SRC)
+
+CINCLUDES-$(CONFIG_LIBDEFLATE) += $(LIBDEFLATE__API)
+CXXINCLUDES-$(CONFIG_LIBDEFLATE) += $(LIBDEFLATE__API)
+
+################################################################################
+# Global flags
+################################################################################
+LIBDEFLATE_CFLAGS += -Wno-sign-compare
+LIBDEFLATE_CFLAGS += -Wno-unused-parameter
+LIBDEFLATE_CFLAGS-$(call have_clang) += -Wno-documentation
+LIBDEFLATE_CFLAGS-$(call have_clang) += -Wno-documentation-unknown-command
+
+################################################################################
+# Library sources
+################################################################################
+# These sources are grouped by directory and sorted in alphabetical order.
+# Please maintain grouping and ordering when updating.
+################################################################################
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/adler32.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/crc32.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/gzip_compress.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/gzip_decompress.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/zlib_compress.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/zlib_decompress.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/deflate_compress.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/deflate_decompress.c
+LIBDEFLATE_SRCS-y += $(LIBDEFLATE_SRC)/lib/utils.c
+
+LIBDEFLATE_SRCS-$(CONFIG_ARCH_ARM_32) += $(LIBDEFLATE_SRC)/lib/arm/cpu_features.c
+LIBDEFLATE_SRCS-$(CONFIG_ARCH_ARM_64) += $(LIBDEFLATE_SRC)/lib/arm/cpu_features.c
+LIBDEFLATE_SRCS-$(CONFIG_ARCH_X86_64) += $(LIBDEFLATE_SRC)/lib/x86/cpu_features.c
